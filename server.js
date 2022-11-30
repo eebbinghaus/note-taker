@@ -1,9 +1,10 @@
 const express = require("express");
 const path = require("path");
+let data = require("./db/db.json");
 
 const generateUniqueId = require("generate-unique-id");
 const fs = require("fs");
-const PORT = 3001;
+const PORT = process.env.PORT || 3001;
 
 const app = express();
 
@@ -17,8 +18,6 @@ app.get("/notes", (req, res) => {
 });
 
 app.get("/api/notes", (req, res) => {
-  const data = require("./db/db.json");
-
   res.json(data);
 });
 
@@ -27,7 +26,6 @@ app.get("*", (req, res) => {
 });
 
 app.post("/api/notes", async (req, res) => {
-  const data = require("./db/db.json");
   const { title, text } = req.body;
 
   if (title && text) {
@@ -51,19 +49,19 @@ app.post("/api/notes", async (req, res) => {
 });
 
 app.delete("/api/notes/:id", async (req, res) => {
-  const data = require("./db/db.json");
-
   const newSavedArr = [];
   const id = req.params.id;
   for (let i = 0; i < data.length; i++) {
     const currentId = data[i];
     if (currentId.id !== id) {
       newSavedArr.push(currentId);
-      await fs.writeFileSync("./db/db.json", JSON.stringify(newSavedArr));
     }
   }
-  console.log(newSavedArr);
-  res.json(newSavedArr);
+  data = [...newSavedArr];
+  await fs.writeFileSync("./db/db.json", JSON.stringify(newSavedArr));
+
+  console.log(data);
+  res.json(data);
 });
 
 app.listen(PORT, () => {
